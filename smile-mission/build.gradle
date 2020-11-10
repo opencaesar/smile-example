@@ -37,7 +37,6 @@ buildscript {
  * Dependency versions
  */
 ext { 
-	imceVersion = '1.+'
 	smileVersion = '1.+'
 }
 
@@ -61,7 +60,6 @@ repositories {
  * The OML dependencies
  */
 dependencies {
-	oml "io.opencaesar.ontologies:jpl-vocabularies:$imceVersion"
 	oml "io.opencaesar.ontologies:smile-methodology:$smileVersion"
 }
 
