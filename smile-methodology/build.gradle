@@ -33,7 +33,7 @@ buildscript {
  * Dependency versions
  */
 ext { 
-	jplVersion = '1.+'
+	imceVersion = '2.+'
 }
 
 /*
@@ -56,7 +56,7 @@ repositories {
  * The OML dependencies
  */
 dependencies {
-	oml "io.opencaesar.ontologies:jpl-vocabularies:$jplVersion"
+	oml "io.opencaesar.ontologies:imce-vocabularies:$imceVersion"
 }
 
 /*

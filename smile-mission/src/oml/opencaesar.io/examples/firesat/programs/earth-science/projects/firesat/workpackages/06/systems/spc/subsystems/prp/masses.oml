@@ -1,0 +1,19 @@
+@dc:title "Propulsion Masses"
+description <http://opencaesar.io/examples/firesat/programs/earth-science/projects/firesat/workpackages/06/systems/spc/subsystems/prp/masses> with # as prp-masses {
+
+	extends <http://opencaesar.io/examples/firesat/programs/earth-science/projects/firesat/workpackages/06/systems/spc/subsystems/prp/prp>
+
+	// Propulsion Mass
+
+	@rdfs:label "Propulsion Mass Limit"
+	ci PropulsionMassLimit : 80000-4-quantities:mass [
+		fse:isMassLimitOf prp:Propulsion
+	]
+
+	@rdfs:label "Propulsion Mass Limit Magnitude"
+	ci PropulsionMassLimitMagnitude : 80000-4-magnitudes-1:kilogram-magnitude [
+		metrology:hasDoubleNumber "44.14"^^xsd:double
+		metrology:isMagnitudeOf PropulsionMassLimit
+	]
+
+}
