@@ -1,9 +1,9 @@
 # SMILE Example
 
-[![Gitpod](https://img.shields.io/badge/gitpod-open-blue?logo=gitpod)](https://gitpod.io/#https://github.com/opencaesar/smile-example) 
 [![Build Status](https://travis-ci.org/opencaesar/smile-example.svg?branch=master)](https://travis-ci.org/opencaesar/smile-example)
-[ ![Download](https://api.bintray.com/packages/opencaesar/ontologies/smile-example/images/download.svg) ](https://bintray.com/opencaesar/ontologies/smile-example/_latestVersion)
+[![Release](https://img.shields.io/github/v/tag/opencaesar/smile-example?label=release)](https://github.com/opencaesar/smile-example/releases/latest)
 [![Documentation](https://img.shields.io/badge/Documentation-HTML-orange)](https://opencaesar.github.io/smile-example/) 
+[![Gitpod](https://img.shields.io/badge/gitpod-open-blue?logo=gitpod)](https://gitpod.io/#https://github.com/opencaesar/smile-example) 
 
 This is a description of a "Space Multi-mission Infrastructure for Lunar Exploration" (SMILE) project expressed in [OML](https://github.com/opencaesar/oml)
 
