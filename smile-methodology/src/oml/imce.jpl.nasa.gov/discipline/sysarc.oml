@@ -1,0 +1,467 @@
+@dc:title "Systems Architecting"
+@dc:type "Library"
+@dc:^description "A library for concepts belonging to the systems architecting discipline."
+@dc:rights """Copyright 2010-2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses,a or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons."""
+@owl:versionInfo "0.5.0"
+@dc:creator "Jet Propulsion Laboratory"
+@dc:date "2021-02-28"
+vocabulary <http://imce.jpl.nasa.gov/discipline/sysarc> with # as sysarc {
+
+    extends <http://imce.jpl.nasa.gov/foundation/base>
+    extends <http://imce.jpl.nasa.gov/foundation/mission>
+    extends <http://imce.jpl.nasa.gov/foundation/analysis>
+    extends <http://imce.jpl.nasa.gov/foundation/project>
+
+    extends <http://ontology.iupac.org/metrology>
+    extends <http://iso.org/80000-3-kindsOfQuantities>
+    extends <http://iso.org/80000-3-units>
+    extends <http://iso.org/80000-4-kindsOfQuantities>
+    extends <http://iso.org/80000-4-units>    
+    extends <http://iso.org/80000-5-kindsOfQuantities>
+    extends <http://iso.org/80000-5-units>
+    extends <http://iso.org/80000-6-kindsOfQuantities>
+    extends <http://iso.org/80000-6-units>
+
+    /* Contents:
+     * Systems
+     * Interfaces
+     * Parameters
+     * (Consider creating a separate vocabulary for each section into a space environment folder and bundle)
+     */
+    
+    // Systems
+
+    /*
+    * There is virtually no limit to containment/aggregation therefore the concept of "sub-something" is flawed.
+    * Below there is an attempt to give a more precise semantic bound to system-related concepts. 
+    * Consider Harmonizing with ECSS-E-TM-10-25
+    *
+    * How to impose that if components are aggregated in a system, they must perform a function?
+    * How to impose that if subassembly/subsystem exists, it must be aggregated in an assembly/system?
+    * How to impose that if components are aggregated in a system, they must be interfaced?
+    * Does the "restricts relation [...] to min INTEGER [...]" means that if the relationship with target exists, it must be at least with an INTEGER number of targets?
+    Or that If the source exists, it must be relatad to at least an INTEGER number of targets.
+    */
+
+    @rdfs:label "System of Systems"
+    concept SystemOfSystems :> mission:Component [
+        restricts all relation base:aggregates to Subsystem
+        restricts relation base:aggregates to min 2 System
+    ]
+
+    @rdfs:label "System"
+    concept System :> mission:Component [
+        restricts all relation base:isAggregatedIn to SystemOfSystems
+        restricts all relation base:aggregates to Subsystem
+        restricts relation base:aggregates to min 2 Subsystem // More than 1?
+    ]
+
+        @rdfs:label "Subsystem"
+    concept Subsystem :> mission:Component [
+        restricts all relation base:isAggregatedIn to System
+        restricts relation base:isAggregatedIn to max 1 System // Unnecessary?
+        restricts all relation base:aggregates to mission:Component
+        restricts relation base:aggregates to min 2 mission:Component
+    ]
+
+    rule subsystem-must-be-aggregated-in-a-system [ // Correct?
+        Subsystem(x11) ->
+        base:isAggregatedIn(x11,x1) ^ System(x1)
+    ]
+
+    rule subsystem-components-must-perform-a-function [ // Correct?
+        Subsystem(x1) ^ base:aggregates(x1,x11) ^ mission:Component(x11) ->
+        mission:Component(x11) ^ mission:performs(x11,x111) ^ mission:Function(x111)
+    ]
+
+    @rdfs:label "Assembly" // e.g. a car
+    concept Assembly :> mission:Component [
+        restricts relation base:contains to min 2 Subassembly
+        restricts some relation hasParameter to Mass
+        restricts some relation hasParameter to PowerIn
+    ]
+
+    @rdfs:label "Subassembly" // e.g. an engine
+    concept Subassembly :> mission:Component [
+        restricts relation base:contains to min 2 HardwareComponent
+        restricts relation base:isContainedIn to max 1 Assembly // Unnecessary (base:Contains is already invfun)?
+        restricts some relation hasParameter to Mass
+        restricts some relation hasParameter to PowerIn
+    ]
+
+    @rdfs:label "Hardware Component" // e.g. an engine cylinder
+    concept HardwareComponent :> mission:Component [
+        restricts some relation hasParameter to Mass
+        restricts some relation hasParameter to TRL
+        restricts some relation hasParameter to PowerIn
+    ]
+
+    @rdfs:label "Software Component" // e.g. a control algorithm
+    concept SoftwareComponent :> mission:Component [
+        restricts some relation hasParameter to FileSize
+        restricts some relation hasParameter to TRL
+    ]
+
+    // Interfaces
+
+    /*
+    * Consider harmonizing with foundation vocabularies and ECSS-E-TM-10-25
+    * Use structured properties?
+    */ 
+
+    ref concept mission:Interface // For visualization purposes
+    ref concept mission:InterchangePoint // For visualization purposes
+
+    @rdfs:label "interface and interchangepoint direction"
+    enumerated scalar interface-interchangepoint-direction :> xsd:string [ // What about not in/out?
+        "1to2"^^xsd:string,
+        "2to1"^^xsd:string,
+        "Bidirectional"^^xsd:string,
+        "Undefined"^^xsd:string
+    ]
+
+    @rdfs:label "has interface direction"
+    scalar property hasInterfaceDirection [
+        domain mission:Interface
+        range interface-interchangepoint-direction
+    ]
+
+    @rdfs:label "has interchangepoint direction"
+    scalar property hasInterchagePointDirection [
+        domain mission:InterchangePoint 
+        range interface-interchangepoint-direction
+    ]
+
+    // Parameters
+
+    /*
+    * Consider harmonizing with foundation, ISO and metrology vocabularies, and ECSS-E-TM-10-25
+    * Use Structures?
+    */ 
+
+    @rdfs:label "Parametric Element"
+    concept ParametricElement :> analysis:Characterization [ // Previously defined as aspect
+        restricts all relation isParameterOf to analysis:CharacterizedElement
+    ]
+
+    @rdfs:label "Has Parameter"
+    relation entity HasParameter :> analysis:Characterizes [
+        from analysis:CharacterizedElement
+        to ParametricElement
+        @rdfs:label "has parameter"
+        forward hasParameter
+        @rdfs:label "is parameter of"
+        reverse isParameterOf
+        asymmetric
+        irreflexive
+    ]
+
+    /* Consider harmonizing the definition of RealNumberParameterType with the following:
+
+    @rdfs:label "Mass Constraint"
+	concept MassConstraint :> analysis:Characterization, metrology:UnitaryQuantity, metrology:UnitaryQuantityValue [
+		restricts all relation analysis:characterizes to MassConstrainedElement
+    restricts all relation metrology:isQuantityOf to MassConstrainedElement
+		restricts relation metrology:hasKindOfQuantity to 80000-4-instances:mass
+	]
+
+    @rdfs:label "Power Control Unit CBE Mass Constraint"
+	ci PowerControlUnitCBEMassConstraint : fse:CBEMassConstraint [
+		fse:hasMassConstraintValue "5.96"^^xsd:double
+    metrology:hasReference 80000-4-instances:kilogram
+		analysis:characterizes sam-assemblies:PowerControlUnit
+	]
+
+    */
+
+    @rdfs:label "Real Number Parameter Type"
+    concept RealNumberParameterType :> ParametricElement, metrology:UnitaryKindOfQuantity, metrology:UnitaryQuantityValue [
+        restricts scalar property hasRealNumberValue to max 1
+        restricts scalar property hasOldValue to max 1
+        restricts scalar property hasMargin to max 1
+        restricts scalar property hasValueWithMargin to max 1
+        restricts scalar property hasMinValue to max 1
+        restricts scalar property hasMaxValue to max 1
+        restricts scalar property hasExponent to max 1
+        restricts scalar property hasSymbol to max 1
+        restricts relation hasMeasurementUnit to exactly 1 metrology:MeasurementUnit // Reconsider this formulation
+    ]
+
+    @rdfs:label "has real number value"
+    scalar property hasRealNumberValue :> metrology:hasDoubleNumber [
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has old value"
+    scalar property hasOldValue :> metrology:hasDoubleNumber [
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has margin"
+    scalar property hasMargin :> metrology:hasDoubleNumber [
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has value with margin"
+    scalar property hasValueWithMargin :> metrology:hasDoubleNumber [
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has min value"
+    scalar property hasMinValue :> metrology:hasDoubleNumber [ // Consider reformulating as a specialization of "analysis:constrains"
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has max value"
+    scalar property hasMaxValue :> metrology:hasDoubleNumber [ // Consider reformulating as a specialization of "analysis:constrains"
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has exponent" // Consider referring to metrology vocabulary
+    scalar property hasExponent [
+        domain RealNumberParameterType
+        range xsd:double
+    ]
+
+    @rdfs:label "has symbol"
+    scalar property hasSymbol [
+        domain RealNumberParameterType
+        range xsd:string
+        ]
+
+    /* Re-formulated from scalar property to relationship + concept
+
+    @rdfs:label "has unit"
+    scalar property hasUnit [
+        domain RealNumberParameterType
+        range xsd:string
+    ]
+    */
+
+    @rdfs:label "Has Measurement Unit" 
+    relation entity HasMeasurementUnit :> metrology:HasReference [
+        from RealNumberParameterType
+        to metrology:MeasurementUnit
+        @rdfs:label "has measurement unit"
+        forward hasMeasurementUnit
+        @rdfs:label "is measurement unit of"
+        reverse isMeasurementUnitOf
+        asymmetric
+        irreflexive
+        functional
+    ]
+
+    @rdfs:label "Boolean Parameter Type"
+    concept BooleanParameterType :> ParametricElement [
+        restricts scalar property hasBooleanValue to max 1
+    ]
+
+    @rdfs:label "has boolean value"
+    scalar property hasBooleanValue [
+        domain BooleanParameterType
+        range xsd:boolean
+    ]
+
+    @rdfs:label "Text Parameter Type"
+    concept TextParameterType :> ParametricElement [
+        restricts scalar property hasTextValue to max 1
+    ]
+
+    @rdfs:label "has text value"
+    scalar property hasTextValue [
+        domain TextParameterType
+        range xsd:string
+    ]
+
+    @rdfs:label "List Parameter Type"
+    concept ListParameterType :> ParametricElement [ // Complete its definition
+        restricts scalar property hasListedValues to exactly 1
+    ]
+
+    @rdfs:label "has listed values"
+    scalar property hasListedValues [
+        domain ListParameterType
+        range xsd:string // What about other literals?
+    ]
+
+    // Consider creating a separate vocabulary for specific parameters below?
+
+    @rdfs:label "Mass"
+    concept Mass :> RealNumberParameterType, 80000-4-kindsOfQuantities:mass [
+        restricts scalar property hasSymbol to "M"^^xsd:string
+    ]
+
+    @rdfs:label "Unit of area"
+    aspect UnitOfArea :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "metre squared"
+    concept metre-squared :> UnitOfVolume, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "metre squared of metre"
+    relation entity metre-squared_of_meter :> metrology:HasFactorForMeasurementUnit [
+        from metre-squared
+        to 80000-3-units:metre
+        forward metre-squared_of_meter-factor
+        restricts scalar property metrology:exponent to "2/1"^^owl:rational
+    ]
+
+    @rdfs:label "area" // Can be calculated as rectangle or circle
+    concept area :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfArea
+    ]
+
+    @rdfs:label "area of length"
+    relation entity area_of_Length :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from area
+        to 80000-3-kindsOfQuantities:^length
+        forward area_of_Length-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "area of width"
+    relation entity area_of_width :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from area
+        to 80000-3-kindsOfQuantities:width
+        forward area_of_width-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "area of radius" // How to consider the "pi" factor?
+    relation entity area_of_radius :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from area
+        to 80000-3-kindsOfQuantities:radius
+        forward area_of_radius-factor
+        functional
+        restricts scalar property metrology:exponent to "2/1"^^owl:rational
+    ]
+
+    @rdfs:label "Unit of volume"
+    aspect UnitOfVolume :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "cubic metre"
+    concept cubic-metre :> UnitOfVolume, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "cubic metre of metre"
+    relation entity cubic-meter_of_meter :> metrology:HasFactorForMeasurementUnit [
+        from cubic-metre
+        to 80000-3-units:metre
+        forward cubic-meter_of_meter-factor
+        restricts scalar property metrology:exponent to "3/1"^^owl:rational
+    ]
+
+    @rdfs:label "volume" // Can be calculated as cylinder or box
+    concept volume :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfVolume
+    ]
+
+    @rdfs:label "volume of length"
+    relation entity volume_of_Length :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from volume
+        to 80000-3-kindsOfQuantities:^length
+        forward volume_of_Length-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "volume of width"
+    relation entity volume_of_width :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from volume
+        to 80000-3-kindsOfQuantities:width
+        forward volume_of_width-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "volume of height"
+    relation entity volume_of_height :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from volume
+        to 80000-3-kindsOfQuantities:height
+        forward volume_of_height-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "volume of radius" // How to consider the "pi" factor?
+    relation entity volume_of_radius :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from volume
+        to 80000-3-kindsOfQuantities:radius
+        forward volume_of_radius-factor
+        functional
+        restricts scalar property metrology:exponent to "2/1"^^owl:rational
+    ]
+
+    @rdfs:label "Power In"
+    concept PowerIn :> RealNumberParameterType, 80000-4-kindsOfQuantities:power [
+        restricts scalar property hasSymbol to "P_in"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to 80000-4-units:watt
+    ]
+
+    @rdfs:label "TRL"
+    concept TRL :> ListParameterType [
+        restricts all scalar property hasListedValues to TRLValues
+    ]
+
+    @rdfs:label "TRL Values"
+    enumerated scalar TRLValues :> xsd:string [
+        "1"^^xsd:string,
+        "2"^^xsd:string,
+        "3"^^xsd:string,
+        "4"^^xsd:string,
+        "5"^^xsd:string,
+        "6"^^xsd:string,
+        "7"^^xsd:string,
+        "8"^^xsd:string,
+        "9"^^xsd:string
+    ]
+
+    @rdfs:label "Unit of memory"
+    aspect UnitOfMemory :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "bit"
+    concept bit :> UnitOfMemory, metrology:IndependentMeasurementUnit
+
+    @rdfs:label "megabit"
+    concept megabit :> UnitOfMemory, metrology:PrefixedMeasurementUnit [
+        restricts relation metrology:hasPrefix to 80000-1:mega
+    ]
+
+    @rdfs:label "byte"
+    concept byte :> metrology:NonCoherentDerivedMeasurementUnit [
+        restricts scalar property metrology:nonCoherentRelationship to "1 byte = 8 bits"^^xsd:string
+        restricts all relation metrology:nonCoherentDerivedMeasurementUnitOf to bit
+    ] 
+
+    @rdfs:label "gigabyte"
+    concept gigabyte :> UnitOfMemory, metrology:PrefixedMeasurementUnit [
+        restricts relation metrology:hasPrefix to 80000-1:giga
+    ]
+
+    @rdfs:label "memory"
+    concept memory :> metrology:IndependentUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfMemory
+    ]
+
+    @rdfs:label "FileSize"
+    concept FileSize :> RealNumberParameterType, memory [
+        restricts scalar property hasSymbol to "sigma"^^xsd:string
+    ]
+
+}

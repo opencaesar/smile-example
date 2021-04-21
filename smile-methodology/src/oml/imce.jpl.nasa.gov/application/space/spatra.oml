@@ -1,0 +1,145 @@
+@dc:title "Space Transportation"
+@dc:type "Library"
+@dc:^description "A library for concepts belonging to the space transportation application."
+@dc:rights """Copyright 2010-2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses,a or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons."""
+@owl:versionInfo "0.5.0"
+@dc:creator "Jet Propulsion Laboratory"
+@dc:date "2021-02-28"
+vocabulary <http://imce.jpl.nasa.gov/application/space/spatra> with # as spatra  {
+
+    extends <http://imce.jpl.nasa.gov/discipline/sysarc>
+
+	/* Contents:
+     * General
+     * Components
+     * Functions
+     * Traversing Elements
+     * Parameters
+     * (Consider creating a separate vocabulary for each section into a space environment folder and bundle)
+     */
+
+    // General (consider moving this section to a "systems architecting" vocabulary)
+
+    @dc:^description "A <classname>TransportingElement</classname> is an object that transports some kind of <classname>Payload</classname> between two spacial points."
+	@rdfs:label "Transporting Element"
+	aspect TransportingElement :> mission:PerformingElement, analysis:CharacterizedElement [
+		restricts all relation mission:performs to TransportsPayload
+        restricts some relation sysarc:hasParameter to PLAvailableMass
+        restricts some relation sysarc:hasParameter to PLAvailableVolume
+    ]
+
+    @rdfs:label "Transports Payload"
+	concept TransportsPayload :> mission:Function [
+        restricts all relation mission:isPerformedBy to TransportingElement
+    ]
+
+    ref relation entity mission:Performs // referred to show up in the diagram
+
+    ref concept mission:MaterialItem // referred to show up in the diagram
+
+    
+    // Components
+
+    @rdfs:label "Atmospheric Vehicle"
+	concept AtmosphericVehicle :> TransportingElement, sysarc:System [
+        restricts some relation mission:performs to TransfersThePayloadFromPointXToPointYAcrossTheAtmosphere
+    ]
+
+    @rdfs:label "Drone"
+	concept Drone :> AtmosphericVehicle
+    
+    @rdfs:label "Launch and Landing Pad"
+	concept Launch-and-Landing-Pad :> sysarc:System [
+        restricts some relation mission:performs to SupportsLaunchAndLandingOperations
+    ]
+
+    @rdfs:label "Launcher" // Define as mission:Junction for modelling as a network?
+	concept Launcher :> TransportingElement, sysarc:System [
+        restricts some relation mission:performs to TransfersThePayloadFromSurfaceToSpace
+    ]
+
+    @rdfs:label "Space Tug"
+	concept SpaceTug :> TransportingElement, sysarc:System [
+        restricts some relation mission:performs to TransfersThePayloadFromOrbitXToOrbitYInSpace
+    ]
+
+    @rdfs:label "Lander"
+	concept Lander :> TransportingElement, sysarc:System [
+        restricts some relation mission:performs to TransfersThePayloadFromSpaceToSurface
+    ]
+
+    @rdfs:label "Rover"
+	concept Rover :> TransportingElement, sysarc:System [
+        restricts some relation mission:performs to TransfersThePayloadFromPointXToPointYOnSurface
+    ]
+
+    @rdfs:label "Space Propulsion Module"
+	concept SpacePropulsionModule :> TransportingElement, sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to PropelsTheSpacecraftInSpace
+    ]
+
+    @rdfs:label "Jet Propulsion Module"
+	concept JetPropulsionModule :> TransportingElement, sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to PropelsTheSpacecraftInTheAtmosphere
+    ]
+
+    @rdfs:label "Powertrain Module"
+	concept PowertrainModule :> TransportingElement, sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to PropelsTheSpacecraftOnSurface
+    ]
+
+    @rdfs:label "Walking Module"
+	concept WalkingModule :> TransportingElement, sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to PropelsTheSpacecraftOnSurface
+    ]
+
+    // Functions
+    
+    @rdfs:label "Transfers the payload from surface to space"
+	concept TransfersThePayloadFromSurfaceToSpace:> mission:Function
+    
+    @rdfs:label "Transfers the payload from point X to point Y across the amosphere"
+	concept TransfersThePayloadFromPointXToPointYAcrossTheAtmosphere:> mission:Function
+
+    @rdfs:label "Transfers the payload from orbit X to orbit Y in space"
+    concept TransfersThePayloadFromOrbitXToOrbitYInSpace:> mission:Function
+
+    @rdfs:label "Transfers the payload from space to surface"
+    concept TransfersThePayloadFromSpaceToSurface:> mission:Function
+
+    @rdfs:label "Transfers the payload from point X to point Y on surface"
+    concept TransfersThePayloadFromPointXToPointYOnSurface:> mission:Function
+
+    @rdfs:label "Propels the spacecraft in space"
+    concept PropelsTheSpacecraftInSpace:> mission:Function
+
+    @rdfs:label "Propels the spacecraft on surface"
+    concept PropelsTheSpacecraftOnSurface:> mission:Function
+
+    @rdfs:label "Propels the spacecraft in the atmosphere"
+    concept PropelsTheSpacecraftInTheAtmosphere:> mission:Function
+
+    @rdfs:label "Supports launch and landing operations"
+    concept SupportsLaunchAndLandingOperations:> mission:Function
+
+    // Traversing Elements
+
+    @rdfs:label "Payload" // Also transporting elements above can be payloads themselves
+    concept Payload :> mission:MaterialItem
+
+    // Parameters (harmonize with analysis and iso vocabularies)
+    
+    @rdfs:label "P/L Available Mass"
+    concept PLAvailableMass :> sysarc:Mass [
+        restricts scalar property sysarc:hasSymbol to "m_PL"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to 80000-4-units:kilogram // reconsider
+    ]
+
+    @rdfs:label "P/L Available Volume"
+    concept PLAvailableVolume :> sysarc:RealNumberParameterType, sysarc:volume [
+        restricts scalar property sysarc:hasSymbol to "m_PL"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to sysarc:cubic-metre // reconsider
+    ]
+
+}

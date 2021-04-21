@@ -1,0 +1,360 @@
+@dc:title "Space Environment"
+@dc:type "Library"
+@dc:^description "A library for concepts belonging to the space environment."
+@dc:rights """Copyright 2010-2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses,a or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons."""
+@owl:versionInfo "0.5.0"
+@dc:creator "Jet Propulsion Laboratory"
+@dc:date "2021-02-28"
+vocabulary <http://imce.jpl.nasa.gov/application/space/spaenv> with # as spaenv  {
+
+    extends <http://imce.jpl.nasa.gov/foundation/mission>
+    extends <http://imce.jpl.nasa.gov/discipline/sysarc>
+
+    /* Contents:
+     * Celestial Bodies
+     * Locations
+     * Landscape morphology
+     * Materials
+     * Gravity & Acceleration
+     * Vacuum & Pressure
+     * Radiation & Particles
+     * Environmental protection
+     * (Consider creating a separate vocabulary for each section into a space environment folder and bundle)
+     */
+
+    // Celestial Bodies
+
+    @rdfs:label "Celestial Body"
+    concept CelestialBody :> mission:Environment [
+        restricts some relation sysarc:hasParameter to GravitationalAcceleration
+        restricts some relation sysarc:hasParameter to AmbientPressure
+    ]
+    
+    @rdfs:label "Sun"
+    concept Sun :> CelestialBody
+    
+    @rdfs:label "Earth"
+    concept Earth :> CelestialBody
+
+    @rdfs:label "Moon"
+    concept Moon :> CelestialBody
+
+    // Locations
+
+    @rdfs:label "Cislunar Space"
+    concept Location :> mission:Environment [
+        restricts some relation sysarc:hasParameter to GravitationalAcceleration
+        restricts some relation sysarc:hasParameter to AmbientPressure
+    ]
+    
+    @rdfs:label "Cislunar Space"
+    concept CislunarSpace :> Location
+    
+    @rdfs:label "South Pole"
+    concept SouthPole :> Location
+
+    // Landscape morphology
+
+    @rdfs:label "Crater"
+    concept Crater :> mission:Environment
+
+    @rdfs:label "Dust"
+    concept Dust :> mission:Environment
+
+    @rdfs:label "Rock"
+    concept Rock :> mission:Environment
+
+    // Materials
+
+    @rdfs:label "Silicate"
+    concept Silicate :> mission:Environment
+
+    @rdfs:label "Metal"
+    concept Metal :> mission:Environment
+    
+    @rdfs:label "Regolite"
+    concept Regolite :> mission:Environment
+
+    @rdfs:label "Ice"
+    concept Ice :> mission:Environment
+
+    @rdfs:label "Oxygen"
+    concept Oxygen :> mission:Environment
+
+    @rdfs:label "Hydrogen"
+    concept Hydrogen :> mission:Environment
+
+    // Gravity & Acceleration
+
+    @rdfs:label "Unit of acceleration"
+    aspect UnitOfAcceleration :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "metre per second squared"
+    concept metre-per-second-squared :> UnitOfAcceleration, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "metre per second squared of metre per second"
+    relation entity metre-per-second-squared_of_metre-per-second :>  metrology:HasFactorForMeasurementUnit [
+        from metre-per-second-squared
+        to 80000-3-units:metre-per-second
+        forward metre-per-second-squared_of_metre-per-second-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "metre per second squared of second"
+    relation entity metre-per-second-squared_of_second :>  metrology:HasFactorForMeasurementUnit [
+        from metre-per-second-squared
+        to 80000-3-units:second
+        forward metre-per-second-squared_of_second-factor
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "g-unit"
+    concept g-unit :> metrology:NonCoherentDerivedMeasurementUnit [
+        restricts scalar property metrology:nonCoherentRelationship to "1 g-unit = 9.80665 metre-per-second-squared"^^xsd:string
+        restricts all relation metrology:nonCoherentDerivedMeasurementUnitOf to metre-per-second-squared
+    ]
+
+    @rdfs:label "acceleration"
+    concept acceleration :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfAcceleration
+    ]
+
+    @rdfs:label "acceleration of velocity"
+    relation entity acceleration_of_velocity :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from acceleration
+        to 80000-3-kindsOfQuantities:velocity
+        forward acceleration_of_velocity-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "acceleration of duration"
+    relation entity acceleration_of_duration :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from acceleration
+        to 80000-3-kindsOfQuantities:duration
+        forward acceleration_of_duration-factor
+        functional
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Gravitational Acceleration"
+    concept GravitationalAcceleration :> sysarc:RealNumberParameterType, acceleration [
+        restricts scalar property sysarc:hasSymbol to "A_g"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to g-unit
+    ]
+
+    // Vacuum & Pressure
+
+    @rdfs:label "Unit of pressure"
+    aspect UnitOfPressure :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "pascal"
+    concept pascal :> UnitOfPressure, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "pascal of newton"
+    relation entity pascal_of_newton :>  metrology:HasFactorForMeasurementUnit [
+        from pascal
+        to 80000-4-units:newton
+        forward pascal_of_newton-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "pascal of metre squared"
+    relation entity pascal_of_metre-squared :>  metrology:HasFactorForMeasurementUnit [
+        from pascal
+        to sysarc:metre-squared
+        forward pascal_of_metre-squared-factor
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "standard atmosphere"
+    concept standard-atmosphere :> metrology:NonCoherentDerivedMeasurementUnit [
+        restricts scalar property metrology:nonCoherentRelationship to "1 standard atmosphere = 101325 pascal"^^xsd:string
+        restricts all relation metrology:nonCoherentDerivedMeasurementUnitOf to pascal
+    ]
+
+    @rdfs:label "bar"
+    concept bar :> metrology:NonCoherentDerivedMeasurementUnit [
+        restricts scalar property metrology:nonCoherentRelationship to "1 bar = 100000 pascal"^^xsd:string
+        restricts all relation metrology:nonCoherentDerivedMeasurementUnitOf to pascal
+    ]
+
+    @rdfs:label "pressure"
+    concept pressure :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfPressure
+    ]
+
+    @rdfs:label "pressure of force"
+    relation entity pressure_of_force :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from pressure
+        to 80000-4-kindsOfQuantities:force
+        forward pressure_of_force-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "pressure of area"
+    relation entity pressure_of_area :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from pressure
+        to sysarc:area
+        forward pressure_of_area-factor
+        functional
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Ambient Pressure"
+    concept AmbientPressure :> sysarc:RealNumberParameterType, pressure [
+        restricts scalar property sysarc:hasSymbol to "P"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to pascal
+    ]
+
+    // Radiation & Particles
+
+    @rdfs:label "Galactic Cosmic Rays"
+    concept GalacticCosmicRays :> mission:Environment
+
+    @rdfs:label "Solar Wind" // Affected by solar activity and solar particle events (e.g. solar flares and coronal mass ejections)
+    concept SolarWind :> mission:Environment
+
+    @rdfs:label "Earth Albedo"
+    concept EarthAlbedo :> mission:Environment
+
+    @rdfs:label "Earth Thermal Infrared Radiation"
+    concept EarthTIR :> mission:Environment
+
+    @rdfs:label "Lunar Albedo"
+    concept LunarAlbedo :> mission:Environment
+
+    @rdfs:label "Lunar Thermal Infrared Radiation"
+    concept LunarTIR :> mission:Environment
+
+    @rdfs:label "Neutral Particles"
+    concept NeutralParticles :> mission:Environment
+
+    @rdfs:label "Ionized Particles"
+    concept IonizedParticles :> mission:Environment
+
+    @rdfs:label "Unit of energy"
+    aspect UnitOfEnergy :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "joule"
+    concept joule :> UnitOfEnergy, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "joule of newton"
+    relation entity joule_of_newton :>  metrology:HasFactorForMeasurementUnit [
+        from joule
+        to 80000-4-units:newton
+        forward joule_of_newton-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "joule of metre"
+    relation entity joule_of_metre :>  metrology:HasFactorForMeasurementUnit [
+        from joule
+        to 80000-3-units:metre
+        forward joule_of_metre-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "electronvolt"
+    concept electronvolt :> metrology:NonCoherentDerivedMeasurementUnit [
+        restricts scalar property metrology:nonCoherentRelationship to "1 electronvolt = 1.602176634×10E−19 joule"^^xsd:string
+        restricts all relation metrology:nonCoherentDerivedMeasurementUnitOf to joule
+    ]
+
+    @rdfs:label "energy"
+    concept energy :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfEnergy
+    ]
+
+    @rdfs:label "energy of force"
+    relation entity energy_of_force :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from energy
+        to 80000-4-kindsOfQuantities:force
+        forward energy_of_force-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "energy of length"
+    relation entity energy_of_Length :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from energy
+        to 80000-3-kindsOfQuantities:^length
+        forward energy_of_Length-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Unit of radiation dose"
+    aspect UnitOfRadiationDose :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "gray"
+    concept gray :> UnitOfRadiationDose, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "gray of joule"
+    relation entity gray_of_joule :>  metrology:HasFactorForMeasurementUnit [
+        from gray
+        to joule
+        forward gray_of_joule-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "gray of kilogram"
+    relation entity gray_of_kilogram :>  metrology:HasFactorForMeasurementUnit [
+        from gray
+        to 80000-4-units:kilogram
+        forward gray_of_kilogram-factor
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "rad"
+    concept rad :> metrology:NonCoherentDerivedMeasurementUnit [
+        restricts scalar property metrology:nonCoherentRelationship to "1 rad = 0.01 gray"^^xsd:string
+        restricts all relation metrology:nonCoherentDerivedMeasurementUnitOf to gray
+    ]
+
+    @rdfs:label "radiation dose"
+    concept radiation-dose :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfRadiationDose
+    ]
+
+    @rdfs:label "radiation dose of energy"
+    relation entity radiation-dose_of_energy :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from radiation-dose
+        to energy
+        forward radiation-dose_of_energy-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "radiation dose of mass"
+    relation entity radiation-dose_of_mass :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from radiation-dose
+        to 80000-4-kindsOfQuantities:mass
+        forward radiation-dose_of_mass-factor
+        functional
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Absorbed dose"
+    concept AbsorbedDose :> sysarc:RealNumberParameterType, radiation-dose [
+        restricts scalar property sysarc:hasSymbol to "D"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to gray
+    ]
+
+    // Environmental protection
+
+}

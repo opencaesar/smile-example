@@ -1,0 +1,192 @@
+@dc:title "Space Telecommunications"
+@dc:type "Library"
+@dc:^description "A library for concepts belonging to the space telecommunications application."
+@dc:rights """Copyright 2010-2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses,a or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons."""
+@owl:versionInfo "0.5.0"
+@dc:creator "Jet Propulsion Laboratory"
+@dc:date "2021-02-28"
+vocabulary <http://imce.jpl.nasa.gov/application/space/spacom> with # as spacom {
+
+    extends <http://imce.jpl.nasa.gov/discipline/sysarc>
+
+	/* Contents:
+     * General
+     * Components
+     * Functions
+     * Traversing Elements
+     * Parameters
+     * (Consider creating a separate vocabulary for each section into a space environment folder and bundle)
+     */
+    
+    // General (consider moving this section to a "systems architecting" vocabulary)
+
+	@dc:^description "A <classname>CommunicatingElement</classname> is an object that <property>ExchangesMessagesWithCommunicatingElement</property>."
+	@rdfs:label "Communicating Element"
+	aspect CommunicatingElement :> mission:PerformingElement, analysis:CharacterizedElement [
+		restricts all relation mission:performs to ExchangesMessagesWithCommunicatingElement
+        restricts some relation sysarc:hasParameter to DataVolume
+        restricts some relation sysarc:hasParameter to DataRate // Or link to mission:Message?
+        restricts some relation sysarc:hasParameter to FrequencyBand
+        restricts some relation sysarc:hasParameter to LatencyTime
+    ]
+    
+    @rdfs:label "Exchanges messages with Communicating Element"
+	concept ExchangesMessagesWithCommunicatingElement :> mission:Function [
+        restricts all relation mission:isPerformedBy to CommunicatingElement
+    ]
+    
+    /*
+     * Patterns ideas:
+     * Interchange-Involves1/Involves2-InterchangePoint
+     * ExchangesMessagesWithCommunicatingElement-InterchangesThrough-InterchangePoint
+     * InterchangePoint-Sends/Receives-PayloadData/Telemetry/Telecommand
+
+    rule ExchangeMessageWithCommunicatingElment-InterchangePoint-exchanges-Messages [
+        mission:Interchange(x12) ^ mission:involves1(x12,x1) ^ mission:InterchangePoint(x1) ^ mission:involves2(x12,x2) ^ mission:InterchangePoint(x2)
+        ^ ExchangesMessagesWithCommunicatingElement(x11) ^ mission:interchangesThrough(x11,x1) ^ mission:InterchangePoint(x1)
+        ^ ExchangesMessagesWithCommunicatingElement(x22) ^ mission:interchangesThrough(x22,x1) ^ mission:InterchangePoint(x2)
+        -> mission:InterchangePoint(x1) ^ mission:sends(x1,x1122) ^ mission:Message(x1122)
+        ^ mission:InterchangePoint(x2) ^ mission:receives(x2,x1122) ^ mission:Message(x1122)
+    ]
+    */
+
+    ref relation entity mission:Performs // referred to show up in the diagram
+
+    ref concept mission:Message // referred to show up in the diagram
+
+    /*
+     * TEST
+    	@rdfs:label "Exchanges Messages With"
+	relation entity ExchangesMessagesWith [
+		from CommunicatingElement
+		to CommunicatingElement
+		@rdfs:label "exchanges messages with"
+		forward exchangesMessagesWith
+		symmetric
+		irreflexive
+	]
+     */
+
+    // Components
+
+    @rdfs:label "Ground Station"
+	concept GroundStation :> CommunicatingElement, sysarc:System
+
+    @rdfs:label "Mission Control Centre"
+	concept MissionControlCentre :> CommunicatingElement, sysarc:System [
+        restricts some relation mission:performs to CoordinatesOperations
+    ]
+    
+    @rdfs:label "PNT Spacecraft"
+	concept PNTSpacecraft :> CommunicatingElement, sysarc:System [
+        restricts some relation mission:performs to ProvidesPNTInformationToCommunicatingElement
+    ]
+    
+    @rdfs:label "Telecmmunication Spacecraft"
+	concept TelecmmunicationSpacecraft :> CommunicatingElement, sysarc:System
+
+    @rdfs:label "Communication Module"
+	concept CommunicationModule :> CommunicatingElement, sysarc:Subsystem, sysarc:Subassembly
+
+    // Functions
+
+    @rdfs:label "Coordinates Operations"
+	concept CoordinatesOperations:> mission:Function
+    
+    @rdfs:label "Provides PNT information to Communicating Element"
+	concept ProvidesPNTInformationToCommunicatingElement:> mission:Function
+
+    // TraversingElements
+
+    @rdfs:label "Payload Data"
+	concept PayloadData :> mission:Message
+
+    @rdfs:label "Telecommand"
+	concept Telecommands :> mission:Message
+
+    @rdfs:label "Telemetry"
+	concept Telemetries :> mission:Message
+    
+    // Parameters (harmonize with analysis and iso vocabularies)
+    
+    @rdfs:label "Unit of bitrate"
+    aspect UnitOfBitrate :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "megabit per second"
+    concept megabit-per-second :> UnitOfBitrate, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "megabit per second of bit"
+    relation entity megabit-per-second_of_bit :>  metrology:HasFactorForMeasurementUnit [
+        from megabit-per-second
+        to sysarc:megabit
+        forward megabit-per-second_of_bit-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "megabit per second of second"
+    relation entity megabit-per-second_of_second :>  metrology:HasFactorForMeasurementUnit [
+        from megabit-per-second
+        to 80000-3-units:second
+        forward megabit-per-second_of_second-factor
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "bitrate"
+    concept bitrate :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfBitrate
+    ]
+
+    @rdfs:label "bitrate of memory"
+    relation entity bitrate_of_memory :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from bitrate
+        to sysarc:memory
+        forward bitrate_of_memory-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "bitrate of duration"
+    relation entity bitrate_of_duration :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from bitrate
+        to 80000-3-kindsOfQuantities:duration
+        forward bitrate_of_duration-factor
+        functional
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Data Rate"
+    concept DataRate :> sysarc:RealNumberParameterType, bitrate [
+        restricts scalar property sysarc:hasSymbol to "DR"^^xsd:string
+    ]
+ 
+    @rdfs:label "Data Volume"
+    concept DataVolume :> sysarc:RealNumberParameterType, sysarc:memory [
+        restricts scalar property sysarc:hasSymbol to "DV"^^xsd:string
+    ]
+
+    @rdfs:label "Frequency Band"
+    concept FrequencyBand :> sysarc:ListParameterType [
+        restricts all scalar property sysarc:hasListedValues to FrequencyBandValues
+    ]
+
+    @rdfs:label "Frequency Band Values"
+    enumerated scalar FrequencyBandValues :> xsd:string [
+        "L"^^xsd:string,
+        "S"^^xsd:string,
+        "C"^^xsd:string,
+        "X"^^xsd:string,
+        "Ku"^^xsd:string,
+        "K"^^xsd:string,
+        "Ka"^^xsd:string
+    ]
+
+    @rdfs:label "Latency Time"
+    concept LatencyTime :> sysarc:RealNumberParameterType, 80000-3-kindsOfQuantities:duration [
+        restricts scalar property sysarc:hasSymbol to "LT"^^xsd:string
+    ]
+    
+}

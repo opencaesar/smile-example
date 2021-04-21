@@ -1,0 +1,146 @@
+@dc:title "Space In-Situ Resources Utilization"
+@dc:type "Library"
+@dc:^description "A library for concepts belonging to the space in-situ resources utilization application."
+@dc:rights """Copyright 2010-2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses,a or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons."""
+@owl:versionInfo "0.5.0"
+@dc:creator "Jet Propulsion Laboratory"
+@dc:date "2021-02-28"
+vocabulary <http://imce.jpl.nasa.gov/application/space/spaisru> with # as spaisru  {
+
+    extends <http://imce.jpl.nasa.gov/discipline/sysarc>
+
+    /* Contents:
+     * General
+     * Components
+     * Functions
+     * Traversing Elements
+     * Parameters
+     * (Consider creating a separate vocabulary for each section into a space environment folder and bundle)
+     */
+    
+    // General (empty?)
+
+    // Components (or move to general and create specific instances?)
+
+    @rdfs:label "Resources Prospecting Module"
+	concept ResourcesProspectingModule :> sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to CharacterizeMaterialResources
+        restricts some relation sysarc:hasParameter to ResourcesEstimatedMass
+    ]
+
+    @rdfs:label "Resources Extraction Module"
+	concept ResourcesExtractModule :> sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to ExtractsMaterialResources
+        restricts some relation sysarc:hasParameter to ResourcesProductionRate
+    ]
+
+    @rdfs:label "Resources Transfering Module"
+	concept ResourcesTransferingModule :> sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to TransfersMaterialResources
+        restricts some relation sysarc:hasParameter to ResourcesProductionRate
+    ]
+
+    @rdfs:label "Resources Storage Module"
+	concept ResourcesStorageModule :> sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to StoresMaterialResources
+        restricts some relation sysarc:hasParameter to ResourcesMass
+    ]
+
+    @rdfs:label "Resources Processing Module"
+	concept ResourcesProcessingModule :> sysarc:Subsystem, sysarc:Subassembly [
+        restricts some relation mission:performs to TransformsMaterialResources
+        restricts some relation sysarc:hasParameter to ResourcesProductionRate
+    ]
+
+    // Functions
+    
+    @rdfs:label "Characterize material resources"
+	concept CharacterizeMaterialResources :> mission:Function
+
+    @rdfs:label "Extracts material resources"
+	concept ExtractsMaterialResources :> mission:Function
+
+    @rdfs:label "Transfers material resources"
+	concept TransfersMaterialResources :> mission:Function
+
+    @rdfs:label "Stores material resources"
+	concept StoresMaterialResources :> mission:Function
+
+    @rdfs:label "Transforms material resources"
+	concept TransformsMaterialResources :> mission:Function
+
+    // Traversing Elements
+
+    @rdfs:label "Material Resources"
+    concept MaterialResources :> mission:MaterialItem
+
+    // Parameters (harmonize with analysis and iso vocabularies)
+    
+    @rdfs:label "Unit of mass flow"
+    aspect UnitOfMassFlow :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to false^^xsd:boolean
+    ]
+
+    @rdfs:label "kilogram per second"
+    concept kilogram-per-second :> UnitOfMassFlow, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "kilogram per second of kilogram"
+    relation entity kilogram-per-second_of_kilogram :>  metrology:HasFactorForMeasurementUnit [
+        from kilogram-per-second
+        to 80000-4-units:kilogram
+        forward kilogram-per-second_of_kilogram-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "kilogram per second of second"
+    relation entity kilogram-per-second_of_second :>  metrology:HasFactorForMeasurementUnit [
+        from kilogram-per-second
+        to 80000-3-units:second
+        forward kilogram-per-second_of_second-factor
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "mass flow"
+    concept massflow :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to false^^xsd:boolean
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfMassFlow
+    ]
+
+    @rdfs:label "massflow of mass"
+    relation entity massflow_of_mass :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from massflow
+        to 80000-4-kindsOfQuantities:mass
+        forward massflow_of_mass-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "massflow of duration"
+    relation entity massflow_of_duration :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from massflow
+        to 80000-3-kindsOfQuantities:duration
+        forward massflow_of_duration-factor
+        functional
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Resources Production Rate"
+    concept ResourcesProductionRate :> sysarc:RealNumberParameterType, massflow [
+        restricts scalar property sysarc:hasSymbol to "M\dot_res"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to kilogram-per-second // reconsider
+    ]
+
+    @rdfs:label "Resources Mass"
+    concept ResourcesMass :> sysarc:Mass [
+        restricts scalar property sysarc:hasSymbol to "M_res"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to 80000-4-units:kilogram // reconsider
+    ]
+
+    @rdfs:label "Resources Estimated Mass"
+    concept ResourcesEstimatedMass :> sysarc:Mass [
+        restricts scalar property sysarc:hasSymbol to "M_res_est"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to 80000-4-units:kilogram // reconsider
+    ]
+
+}

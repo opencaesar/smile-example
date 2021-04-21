@@ -1,0 +1,187 @@
+@dc:title "Space Power Systems"
+@dc:type "Library"
+@dc:^description "A library for concepts belonging to the space power systems."
+@dc:rights """Copyright 2010-2021, by the California Institute of Technology. ALL RIGHTS RESERVED. United States Government Sponsorship acknowledged. Any commercial use must be negotiated with the Office of Technology Transfer at the California Institute of Technology.
+This software may be subject to U.S. export control laws. By accepting this software, the user agrees to comply with all applicable U.S. export laws and regulations. User has the responsibility to obtain export licenses,a or other export authority as may be required before exporting such information to foreign countries or providing access to foreign persons."""
+@owl:versionInfo "0.5.0"
+@dc:creator "Jet Propulsion Laboratory"
+@dc:date "2021-02-28"
+vocabulary <http://imce.jpl.nasa.gov/application/space/spapow> with # as spapow  {
+
+    extends <http://imce.jpl.nasa.gov/discipline/sysarc>
+
+    /* Contents:
+     * General
+     * Components
+     * Functions
+     * Traversing Elements
+     * Parameters
+     * (Consider harmonizing with fse vocabulary and/or creating a separate vocabulary for each section into a space environment folder and bundle)
+     */
+    
+    // General (consider creating storing, controlling and distributing element)
+
+    @dc:^description "A <classname>PowerGeneratingElement</classname> is an object that provides electric power."
+	@rdfs:label "Electric Power Providing Element"
+	aspect ElectricPowerProvidingElement :> mission:PerformingElement, analysis:CharacterizedElement [
+		restricts all relation mission:performs to ProvidesElectricPower
+        restricts some relation sysarc:hasParameter to Efficiency
+    ]
+
+    @rdfs:label "Provides Electric Power"
+	concept ProvidesElectricPower :> mission:Function [
+        restricts all relation mission:isPerformedBy to ElectricPowerProvidingElement
+    ]
+
+	@rdfs:label "Electric Power Generating Element"
+	aspect ElectricPowerGeneratingElement :> ElectricPowerProvidingElement  [
+		restricts all relation mission:performs to GeneratesElectricPower
+        restricts some relation sysarc:hasParameter to PowerOut
+    ]
+
+    @rdfs:label "Generates Electric Power"
+	concept GeneratesElectricPower :> mission:Function [
+        restricts all relation mission:isPerformedBy to ElectricPowerGeneratingElement
+    ]
+
+    ref relation entity mission:Performs // referred to show up in the diagram
+
+    ref concept mission:Flow // referred to show up in the diagram
+
+    // Components
+
+    @rdfs:label "Solar Array"
+	concept SolarArray :> sysarc:Subsystem, sysarc:Subassembly, ElectricPowerGeneratingElement
+
+    @rdfs:label "Solar Farm"
+	concept SolarFarm :> sysarc:System, ElectricPowerGeneratingElement [
+        restricts some relation base:aggregates to SolarArray
+        restricts relation base:aggregates to min 2 SolarArray 
+    ]
+
+    @rdfs:label "Nuclear Power Generator"
+	concept NuclearPowerGenerator :> sysarc:Subsystem, sysarc:Subassembly, ElectricPowerGeneratingElement
+
+    @rdfs:label "Fuel Cell"
+	concept FuelCell :> sysarc:Subsystem, sysarc:Subassembly, ElectricPowerGeneratingElement
+
+    @rdfs:label "Battery"
+	concept Battery :> sysarc:Subsystem, sysarc:Subassembly, ElectricPowerProvidingElement [
+        restricts some relation mission:performs to StoresElectricPower
+    ]
+
+    @rdfs:label "Power Control and Distribution Module"
+	concept PowerDistributionModule :> sysarc:Subsystem, sysarc:Subassembly, ElectricPowerProvidingElement [
+        restricts some relation mission:performs to DistributesElectricPower
+        restricts some relation mission:performs to ControlsElectricPower
+    ]
+
+    @rdfs:label "ElectricCables"
+	concept ElectricCables :> sysarc:Subassembly, mission:Junction [
+        restricts some relation mission:performs to DistributesElectricPower
+    ]
+
+    // Functions
+    
+    @rdfs:label "Stores Electric Power"
+	concept StoresElectricPower :> mission:Function
+    
+    @rdfs:label "Distributes Electric Power"
+	concept DistributesElectricPower :> mission:Function
+
+    @rdfs:label "Controls Electric Power"
+	concept ControlsElectricPower :> mission:Function
+
+    // Traversing Elements
+
+    @rdfs:label "Electric Current"
+	concept ELectricCurrent :> mission:Flow
+
+    // Parameters (harmonize with analysis and iso vocabularies)
+
+    @rdfs:label "Unit of efficiency"
+    aspect UnitOfEfficiency :> metrology:CoherentMeasurementUnit [
+        restricts scalar property metrology:isDimensionlessMeasurementUnit to true^^xsd:boolean // Review
+    ]
+
+    @rdfs:label "percent" // Review
+    concept percent :> UnitOfEfficiency, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "percent of watt in"
+    relation entity percent_of_watt-in :> metrology:HasFactorForMeasurementUnit [
+        from percent
+        to 80000-4-units:watt
+        forward wattin_of_percent-factor
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+
+    @rdfs:label "percent of watt out"
+    relation entity percent_of_watt-out :> metrology:HasFactorForMeasurementUnit [
+        from percent
+        to 80000-4-units:watt
+        forward wattout_of_percent-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "efficiency"
+    concept efficiency :> metrology:DerivedUnitaryKindOfQuantity [
+        restricts scalar property metrology:isDimensionlessKindOfQuantity to true^^xsd:boolean // Review
+        restricts all relation metrology:forQuantitiesOfTheSameUnitaryKindOfQuantity to UnitOfEfficiency
+    ]
+
+    @rdfs:label "efficiency of power in"
+    relation entity efficiency_of_power-in :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from efficiency
+        to 80000-4-kindsOfQuantities:power
+        forward efficiency_of_power-in-factor
+        functional
+        restricts scalar property metrology:exponent to "-1/1"^^owl:rational
+    ]
+    
+    @rdfs:label "efficiency of power out"
+    relation entity efficiency_of_power-out :> metrology:HasFactorForUnitaryKindOfQuantity [
+        from efficiency
+        to 80000-4-kindsOfQuantities:power
+        forward efficiency_of_power-out-factor
+        functional
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "Efficiency"
+    concept Efficiency :> sysarc:RealNumberParameterType, efficiency [
+        restricts scalar property sysarc:hasSymbol to "eta"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to percent
+    ]
+    
+    @rdfs:label "Power Out"
+    concept PowerOut :> sysarc:RealNumberParameterType, 80000-4-kindsOfQuantities:power [
+        restricts scalar property sysarc:hasSymbol to "P_out"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to 80000-4-units:watt
+    ]
+
+    @rdfs:label "ampere-hour" // Review
+    concept ampere-hour :> 80000-6-units:UnitOfElectricCharge, metrology:DerivedMeasurementUnit
+
+    @rdfs:label "ampere-hour of ampere"
+    relation entity ampere-hour_of_ampere :>  metrology:HasFactorForMeasurementUnit [
+        from ampere-hour
+        to 80000-6-units:ampere
+        forward ampere-hour_of_ampere-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+    @rdfs:label "ampere-hour of hour"
+    relation entity ampere-hour_of_hour :>  metrology:HasFactorForMeasurementUnit [
+        from ampere-hour
+        to 80000-3-units:hour
+        forward ampere-hour_of_hour-factor
+        restricts scalar property metrology:exponent to "1/1"^^owl:rational
+    ]
+
+     @rdfs:label "Battery Capacity"
+    concept BatteryCapacity :> sysarc:RealNumberParameterType, 80000-6-kindsOfQuantities:electric-charge [
+        restricts scalar property sysarc:hasSymbol to "C"^^xsd:string
+        restricts all relation sysarc:hasMeasurementUnit to ampere-hour
+    ]
+
+}
