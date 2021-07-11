@@ -1,2 +1,6 @@
+
 tasks:
   - init: ./gradlew build
+vscode:
+  extensions:
+    - opencaesar.oml-luxor
